@@ -5,8 +5,6 @@
 
 ### SETUP: RUN THIS BEFORE STARTING ----------
 
-setwd("~/Documents/GitHub/259-data-transformations-hw/")
-
 #Load packages
 library(tidyverse)
 ds <- read_csv("data_raw/rolling_stone_500.csv")
@@ -60,10 +58,10 @@ top10 <- ds %>% filter(rank <= 10) %>% select(artist, song)
 ### Question 6 ----------
 
 # Use summarize to find the earliest, most recent, and average release year
-# of all songs on the full list (no need to save it anywhere)
+# of all songs on the full list. Save it to a new tibble called "ds_sum"
 
 #ANSWER
-sumDs <- ds %>% summarize(min_yr = min(year, na.rm = T),
+ds_sum <- ds %>% summarize(min_yr = min(year, na.rm = T),
                  max_yr = max(year, na.rm = T),
                  mean_yr = mean(year, na.rm = T))
 
@@ -74,8 +72,10 @@ sumDs <- ds %>% summarize(min_yr = min(year, na.rm = T),
 # Use one filter command only, and sort the responses by year
 
 #ANSWER
-ds %>% filter(year == sumDs$min_yr | year == sumDs$max_yr | year == sumDs$mean_yr) %>% arrange(year)
-
+ds %>% filter(year == 1879 | year == 1980 | year == 2020) %>% arrange(year)
+ds %>% filter(year == round(ds_sum$min_yr) | 
+                year == round(ds_sum$mean_yr) | 
+                year == round(ds_sum$max_yr) ) %>% arrange(year)
 ### Question 8 ---------- 
 
 # There's and error here. The oldest song "Brass in Pocket"

@@ -50,7 +50,7 @@ ds <- read_csv("data_raw/rolling_stone_500.csv")
 ### Question 6 ----------
 
 # Use summarize to find the earliest, most recent, and average release year
-# of all songs on the full list (no need to save it anywhere)
+# of all songs on the full list. Save it to a new tibble called "ds_sum"
 
 #ANSWER
 
@@ -58,7 +58,7 @@ ds <- read_csv("data_raw/rolling_stone_500.csv")
 ### Question 7 ----------
 
 # Use filter to find out the artists/song titles for the earliest, most 
-# recent, and average-ist years in the data set. 
+# recent, and average-ist years in the data set (the values obtained in Q6). 
 # Use one filter command only, and sort the responses by year
 
 #ANSWER
