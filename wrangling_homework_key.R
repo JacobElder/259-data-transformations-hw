@@ -21,6 +21,10 @@ ds$Year <- as.numeric(ds$Year) #One option
 ds <- ds %>% mutate(Year = as.numeric(Year)) #Another option
 typeof(ds$Year)
 
+# "It is a historical anomaly that R has two names for its floating-point vectors, double and numeric (and formerly had real ). 
+# double is the name of the type. numeric is the name of the mode and also of the implicit class. As an S4 formal class, 
+# use "numeric" ."
+
 ### Question 2 ---------- 
 
 # Using a dplyr function,
@@ -29,6 +33,12 @@ typeof(ds$Year)
 #ANSWER
 ds <- ds %>% rename_all(tolower) #one option
 ds <- ds %>% rename(year = Year, rank = Rank, artist = Artist, song = Song) #less good option
+
+# Some did
+
+ds %>% rename_with(tolower)
+
+# ds %>% rename_with(tolower, .cols = c(Rank,Year))
 
 ### Question 3 ----------
 
@@ -55,15 +65,27 @@ ds <- ds %>% arrange(rank)
 
 top10 <- ds %>% filter(rank <= 10) %>% select(artist, song)
 
+# Some people did this, which is valid
+top10 <- slice_head(ds, n=10)
+                    # but you'd want to pipe
+top10 <- slice_head(ds, n=10) %>%
+  select(artist, song)
+
 ### Question 6 ----------
 
 # Use summarize to find the earliest, most recent, and average release year
-# of all songs on the full list. Save it to a new tibble called "ds_sum"
+# of all songs on the full list (no need to save it anywhere)
 
 #ANSWER
-ds_sum <- ds %>% summarize(min_yr = min(year, na.rm = T),
+summary <- ds %>% summarize(min_yr = min(year, na.rm = T),
                  max_yr = max(year, na.rm = T),
                  mean_yr = mean(year, na.rm = T))
+
+# Someone did
+ds_sum <- ds %>% summarize(Year_min=min(Year[!is.na(Year)]),
+                           Year_recent=max(Year[!is.na(Year)]),
+                           Year_mean=mean(Year[!is.na(Year)])
+)
 
 ### Question 7 ----------
 
@@ -72,10 +94,20 @@ ds_sum <- ds %>% summarize(min_yr = min(year, na.rm = T),
 # Use one filter command only, and sort the responses by year
 
 #ANSWER
-ds %>% filter(year == 1879 | year == 1980 | year == 2020) %>% arrange(year)
-ds %>% filter(year == round(ds_sum$min_yr) | 
-                year == round(ds_sum$mean_yr) | 
-                year == round(ds_sum$max_yr) ) %>% arrange(year)
+ds %>% filter(year == min(round(summary$min_yr)) | year == min(round(summary$max_yr)) | year == min(round(summary$mean_yr)) ) %>% arrange(year)
+
+# Someone did (hard coded)
+ds3 <- ds %>% filter(Year %in% c("1879","2020","1980") ) %>% select(Artist, Song, Year) %>% arrange(Year)
+
+# Another person did
+ds %>% 
+  filter(Year %in% c(min(Year[!is.na(Year)]), max(Year[!is.na(Year)]), round(mean(Year[!is.na(Year)])))) %>% 
+  arrange(Year)
+
+# Base R
+ds4<-ds[ds$Year %in% c(1879,2020,1980), c("Artist","Song","Year")]
+ds4<-ds4[order(ds4$Year),]
+
 ### Question 8 ---------- 
 
 # There's and error here. The oldest song "Brass in Pocket"
@@ -87,10 +119,10 @@ ds %>% filter(year == round(ds_sum$min_yr) |
 #ANSWER
 ds  <- ds %>% mutate(year = ifelse(song == "Brass in Pocket", 1979, year),
                      decade = floor(year/10)*10) 
-ds %>% summarize(min_yr = min(year, na.rm = T),
+summary <- ds %>% summarize(min_yr = min(year, na.rm = T),
                  max_yr = max(year, na.rm = T),
                  mean_yr = mean(year, na.rm = T))
-ds %>% filter(year == 1937 | year == 1980 | year == 2020) %>% arrange(year)
+ds %>% filter(year == min(round(summary$min_yr)) | year == min(round(summary$max_yr)) | year == min(round(summary$mean_yr)) ) %>% arrange(year)
 
 ### Question 9 ---------
 
@@ -100,10 +132,17 @@ ds %>% filter(year == 1937 | year == 1980 | year == 2020) %>% arrange(year)
 # You don't need to save the results anywhere
 # Use the pipe %>% to string the commands together
 
+# There are some NAs
+
+#ds[is.na(ds$Year),]
+
 #ANSWER
 ds %>% filter(!is.na(decade)) %>% 
   group_by(decade) %>% 
   summarize(mean_rank = mean(rank), n_songs = n())
+
+# Someone also did
+ds %>% drop_na(decade) %>% group_by(decade) %>% summarise(average_rank=mean(Rank), number_of_songs=n())
 
 ### Question 10 --------
 
@@ -113,6 +152,15 @@ ds %>% filter(!is.na(decade)) %>%
 # Use the pipe %>% to string the commands together
 
 #ANSWER
-ds %>% count(decade) %>% slice_max(n)
+ds %>% drop_na() %>% count(decade) %>% slice_max(n)
 
-  
+# #what does "Source on Save" box mean on R (next to the save button) and do I need to click it?? 
+
+# My understanding is this feature will just execute your code entirely every time you save
+
+#lots of things in help show data as .ds - should I have included the . in mine? 
+
+# Based on the comments provided by joran, 42, and hadley (who wrote dplyr), it appears that the correct answer is to avoid name 
+# collisions with the data() function in the base packages in R.
+# It is considered a best practice to avoid name collisions, and thus the dot prefix is just an arbitrary character to disambiguate the 
+# .data parameter in dplyr from the data() function in the base R package.
